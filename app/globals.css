@@ -35,8 +35,10 @@ button { font: inherit; }
 .brand-mark { display: grid; place-items: center; width: 28px; height: 28px; color: var(--ink); background: var(--accent); letter-spacing: -.08em; }
 .mission-clock { justify-content: center; color: var(--accent); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: blink 1.4s steps(2) infinite; }
-.pause-control { justify-self: end; height: 100%; padding: 0 16px; border: 0; border-left: 1px solid var(--line); color: var(--dim); background: transparent; font: 8px var(--font-geist-mono), monospace; letter-spacing: .08em; cursor: pointer; }
-.pause-control:hover { color: var(--ink); background: var(--accent); }
+.header-controls { justify-self: end; align-self: stretch; display: flex; }
+.pause-control, .audio-control { height: 100%; padding: 0 13px; border: 0; border-left: 1px solid var(--line); color: var(--dim); background: transparent; font: 8px var(--font-geist-mono), monospace; letter-spacing: .08em; cursor: pointer; }
+.audio-control { color: var(--accent); }
+.pause-control:hover, .audio-control:hover { color: var(--ink); background: var(--accent); }
 
 .attention-grid {
   min-height: calc(100vh - 202px);
@@ -62,7 +64,7 @@ button { font: inherit; }
 
 .primary-feed { grid-column: 2; grid-row: 1; }
 .moon-frame { position: relative; height: calc(100% - 116px); min-height: 165px; overflow: hidden; background: #070806; }
-.moon-frame img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.35) brightness(.75); animation: lunarDrift 20s ease-in-out infinite alternate; }
+.moon-frame video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.35) brightness(.75); }
 @keyframes lunarDrift { to { transform: scale(1.12) translate(-2%, 2%); } }
 .reticle { position: absolute; z-index: 2; background: color-mix(in srgb, var(--accent) 55%, transparent); }
 .reticle.horizontal { top: 50%; left: 0; width: 100%; height: 1px; }
@@ -83,7 +85,7 @@ button { font: inherit; }
 
 .media-buffer { grid-column: 3; grid-row: 1; }
 .melies-frame { position: relative; height: calc(100% - 72px); min-height: 160px; overflow: hidden; background: #080907; }
-.melies-frame img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.3) brightness(.7); animation: filmJitter 1.8s steps(2) infinite; }
+.melies-frame video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.3) brightness(.7); animation: filmJitter 1.8s steps(2) infinite; }
 @keyframes filmJitter { 25% { transform: translate(1px, -1px) scale(1.04); } 75% { transform: translate(-1px, 1px) scale(1.035); } }
 .melies-frame > span { position: absolute; z-index: 2; left: 7px; bottom: 7px; padding: 4px; color: #fff; background: #000c; font: 7px var(--font-geist-mono), monospace; }
 .film-scratch { position: absolute; z-index: 2; top: -20%; width: 1px; height: 140%; background: #fff8; animation: scratch 2.3s linear infinite; }
@@ -184,7 +186,9 @@ footer p { margin: 0; }
 @media (max-width: 900px) {
   .system-header { grid-template-columns: 1fr auto; }
   .mission-clock { grid-column: 2; border-right: 0; }
-  .pause-control { grid-column: 1 / 3; width: 100%; min-height: 30px; border-top: 1px solid var(--line); border-left: 0; }
+  .header-controls { grid-column: 1 / 3; width: 100%; min-height: 30px; border-top: 1px solid var(--line); }
+  .pause-control, .audio-control { flex: 1; border-left: 0; }
+  .pause-control { border-left: 1px solid var(--line); }
   .attention-grid { min-height: 0; grid-template-columns: 1fr 1fr; grid-template-rows: 280px 210px 190px; }
   .thought-stream { grid-column: 1; grid-row: 1; }
   .primary-feed { grid-column: 2; grid-row: 1; }

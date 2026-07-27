@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type FlowId = "clients" | "modules" | "feed" | "media";
 
@@ -172,12 +172,39 @@ export default function Home() {
   const [activeFlow, setActiveFlow] = useState<FlowId>("clients");
   const [tick, setTick] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [audioOpen, setAudioOpen] = useState(false);
+  const apolloVideo = useRef<HTMLVideoElement>(null);
+  const mediaVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (paused) return;
     const timer = window.setInterval(() => setTick((value) => value + 1), 1400);
     return () => window.clearInterval(timer);
   }, [paused]);
+
+  useEffect(() => {
+    const videos = [apolloVideo.current, mediaVideo.current].filter(
+      (video): video is HTMLVideoElement => Boolean(video),
+    );
+    videos.forEach((video) => {
+      if (paused) {
+        video.pause();
+      } else {
+        void video.play().catch(() => {
+          // The poster remains visible if a browser blocks autoplay.
+        });
+      }
+    });
+  }, [paused]);
+
+  function toggleAudio() {
+    const next = !audioOpen;
+    setAudioOpen(next);
+    if (apolloVideo.current) {
+      apolloVideo.current.muted = !next;
+      if (next) void apolloVideo.current.play();
+    }
+  }
 
   const flow = useMemo(
     () => FLOWS.find((item) => item.id === activeFlow) ?? FLOWS[0],
@@ -200,9 +227,14 @@ export default function Home() {
           <span className="live-dot" />
           MISSION TIME {clockFromTick(tick)}
         </div>
-        <button className="pause-control" onClick={() => setPaused((value) => !value)}>
-          {paused ? "RESUME ALL PROCESSES" : "PAUSE NONCRITICAL PROCESSES"}
-        </button>
+        <div className="header-controls">
+          <button className="audio-control" onClick={toggleAudio} aria-pressed={audioOpen}>
+            {audioOpen ? "MISSION AUDIO: OPEN" : "MISSION AUDIO: MUTED"}
+          </button>
+          <button className="pause-control" onClick={() => setPaused((value) => !value)}>
+            {paused ? "RESUME ALL PROCESSES" : "PAUSE NONCRITICAL PROCESSES"}
+          </button>
+        </div>
       </header>
 
       <section className="attention-grid" aria-label="SecUnit attention field">
@@ -228,9 +260,16 @@ export default function Home() {
         <article className="panel primary-feed">
           <div className="panel-label"><span>02 / EXTERNAL CAMERA</span><span>APOLLO 11</span></div>
           <div className="moon-frame">
-            <img
-              src="https://svs.gsfc.nasa.gov/vis/a010000/a013200/a013270/Apollo11.00001_print.jpg"
-              alt="Archival Apollo 11 mission imagery from NASA Goddard"
+            <video
+              ref={apolloVideo}
+              src="/media/apollo-11-intro.mp4"
+              poster="https://svs.gsfc.nasa.gov/vis/a010000/a013200/a013270/Apollo11.00001_print.jpg"
+              autoPlay
+              muted={!audioOpen}
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="Archival Apollo 11 mission video from NASA Goddard"
             />
             <div className="reticle horizontal" />
             <div className="reticle vertical" />
@@ -249,11 +288,18 @@ export default function Home() {
         </article>
 
         <article className="panel media-buffer">
-          <div className="panel-label"><span>03 / MEDIA BUFFER</span><span>PLAYING · MUTED</span></div>
+          <div className="panel-label"><span>03 / MEDIA BUFFER</span><span>PLAYING · SILENT</span></div>
           <div className="melies-frame">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Le_Voyage_dans_la_Lune_%281902%29.webm/640px--Le_Voyage_dans_la_Lune_%281902%29.webm.jpg"
-              alt="Frame from the public-domain film A Trip to the Moon"
+            <video
+              ref={mediaVideo}
+              src="/media/trip-to-the-moon-loop.webm"
+              poster="/media/trip-to-the-moon-poster.jpg"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-label="Public-domain excerpt from A Trip to the Moon"
             />
             <div className="film-scratch one" />
             <div className="film-scratch two" />
