@@ -262,7 +262,7 @@ export default function Home() {
           <div className="moon-frame">
             <video
               ref={apolloVideo}
-              src="/media/apollo-11-intro.mp4"
+              src="/media/apollo-11-intro.mp4?codec=h264"
               poster="https://svs.gsfc.nasa.gov/vis/a010000/a013200/a013270/Apollo11.00001_print.jpg"
               autoPlay
               muted={!audioOpen}
