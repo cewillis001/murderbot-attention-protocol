@@ -1,98 +1,109 @@
-# vinext-starter
+# Attention Protocol
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+**See what it is like from Murderbot's point of view.**
 
-## Prerequisites
+Attention Protocol is an unofficial fan experiment inspired by Martha Wells's
+*Murderbot Diaries*. It presents the Apollo 11 mission as a field of concurrent
+inputs: client safety, mission telemetry, guidance code, transcripts, and the
+far more important matter of keeping media buffered.
 
-- Node.js `>=22.13.0`
+The project is also a small demonstration of programmable attention. Its
+long-term goal is to accept a video, run a user-selected monitoring flow, and
+turn detected events into a clocked stream of SecUnit-style observations.
 
-## Quick Start
+## Current prototype
+
+The current Apollo 11 experience includes:
+
+- simultaneous Apollo and public-domain fiction video;
+- optional mission audio;
+- autonomous thought, transcript, telemetry, code, and text panels;
+- four selectable attention allocations;
+- a shared 1.4-second clock that advances the simulated monitoring processes;
+- responsive layouts for desktop and mobile.
+
+This version is deliberately deterministic. Its thoughts and transcript lines
+currently rotate from curated lists; it does not yet analyze the audio.
+
+Private preview:
+[murderbot-attention-protocol.cewillismail.chatgpt.site](https://murderbot-attention-protocol.cewillismail.chatgpt.site/)
+
+## Next milestone
+
+The next vertical slice makes one part of the experience genuinely reactive:
+
+1. synchronize a small Apollo transcript cue sheet to video playback;
+2. match a cue such as `program alarm`;
+3. place a typed event in an attention queue;
+4. consume that event on the next system tick;
+5. emit a specific reaction in the internal thought stream;
+6. fall back to routine client monitoring when the queue is empty.
+
+See [the project plan](docs/project-plan.md) for the design principles,
+milestones, and completion criteria.
+
+## How the prototype works
+
+The interface is a React component written in TSX. A shared `tick` state
+increments every 1.4 seconds. Panels derive their current item from that tick,
+which gives the prototype a simple, inspectable monitoring loop.
+
+The planned reactive architecture keeps that clock:
+
+```text
+timed transcript or local transcription
+                 |
+                 v
+          keyword matcher
+                 |
+                 v
+        prioritized event queue
+                 |
+                 v
+             next tick
+                 |
+                 v
+          visible thought history
+```
+
+Safety-critical actions should never wait for a joke or a display update.
+Thoughts may land on the clock; protective behavior remains immediate.
+
+## Run locally
+
+Requirements: Node.js `>=22.13.0`.
 
 ```bash
 npm install
 npm run dev
+```
+
+Build verification:
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Sources
 
-## Included Shape
+The prototype uses public-domain or openly available historical material from:
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- [NASA Goddard Scientific Visualization Studio](https://svs.gsfc.nasa.gov/10451/)
+- [Wikimedia Commons: *Le Voyage dans la Lune*](https://commons.wikimedia.org/wiki/File:Le_Voyage_Dans_La_Lune.ogv)
+- Project Gutenberg
+- Virtual AGC and the MIT Museum
 
-## Workspace Auth Headers
+The bundled Apollo video was converted to browser-compatible H.264. The
+Méliès media buffer uses a short, locally bundled excerpt.
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+## Deployment
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+The working preview is currently hosted privately through OpenAI Sites. The
+intended public deployment will eventually move to infrastructure owned by the
+project owner. See [the AWS Amplify follow-up](docs/aws-amplify-followup.md).
 
-Treat the full name as optional and fall back to email when it is absent:
+## Fanwork notice
 
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+This is an unofficial, noncommercial fan project. *The Murderbot Diaries* and
+its characters belong to Martha Wells and their respective rightsholders. No
+novel text or television footage is bundled with this repository.
